@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#a8e6cf">
+  <meta name="description" content="かわいいもぐら叩きゲーム。30秒でスコアを競おう！">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="もぐら叩き">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>もぐら叩き</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="scene-bg" aria-hidden="true">
+    <span class="cloud cloud--1"></span>
+    <span class="cloud cloud--2"></span>
+    <span class="cloud cloud--3"></span>
+    <span class="grass-blade grass-blade--1"></span>
+    <span class="grass-blade grass-blade--2"></span>
+    <span class="grass-blade grass-blade--3"></span>
+    <span class="grass-blade grass-blade--4"></span>
+  </div>
+
+  <div id="game-container" class="game-container">
+    <div class="combo-rainbow-glow" aria-hidden="true"></div>
+    <header class="header">
+      <h1>もぐら叩き</h1>
+      <p class="subtitle">30秒でスコアを伸ばそう！3コンボで倍率アップ</p>
+    </header>
+
+    <section class="char-guide" aria-label="キャラクター説明">
+      <h2 class="char-guide-title">キャラクター</h2>
+      <ul class="char-guide-list">
+        <li>
+          <div class="char-preview" aria-hidden="true">
+            <div class="character mole mini">
+              <div class="char-body">
+                <div class="char-torso"></div>
+                <div class="char-head">
+                  <span class="char-eye char-eye--l"><span class="char-shine"></span></span>
+                  <span class="char-eye char-eye--r"><span class="char-shine"></span></span>
+                  <span class="char-cheek char-cheek--l"></span>
+                  <span class="char-cheek char-cheek--r"></span>
+                  <span class="char-snout">
+                    <span class="char-nose-star"></span>
+                  </span>
+                  <span class="char-whisker char-whisker--l"></span>
+                  <span class="char-whisker char-whisker--r"></span>
+                </div>
+                <span class="char-claw char-claw--l"></span>
+                <span class="char-claw char-claw--r"></span>
+              </div>
+            </div>
+          </div>
+          <span class="char-name">もぐら</span>
+          <span class="char-points">1点</span>
+        </li>
+        <li>
+          <div class="char-preview" aria-hidden="true">
+            <div class="character alien mini">
+              <div class="char-body">
+                <div class="char-head">
+                  <span class="char-antenna char-antenna--l"><span class="char-antenna-ball"></span></span>
+                  <span class="char-antenna char-antenna--r"><span class="char-antenna-ball"></span></span>
+                  <span class="char-eye char-eye--l"><span class="char-shine"></span></span>
+                  <span class="char-eye char-eye--r"><span class="char-shine"></span></span>
+                  <span class="char-mouth"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="char-name">エイリアン</span>
+          <span class="char-points">5点</span>
+        </li>
+        <li>
+          <div class="char-preview" aria-hidden="true">
+            <div class="character gold mini">
+              <span class="char-aura"></span>
+              <span class="char-crown"></span>
+              <span class="char-spark char-spark--1"></span>
+              <span class="char-spark char-spark--2"></span>
+              <div class="char-body">
+                <div class="char-torso"></div>
+                <div class="char-head">
+                  <span class="char-eye char-eye--l"><span class="char-shine"></span></span>
+                  <span class="char-eye char-eye--r"><span class="char-shine"></span></span>
+                  <span class="char-cheek char-cheek--l"></span>
+                  <span class="char-cheek char-cheek--r"></span>
+                  <span class="char-snout">
+                    <span class="char-nose-star"></span>
+                  </span>
+                  <span class="char-whisker char-whisker--l"></span>
+                  <span class="char-whisker char-whisker--r"></span>
+                </div>
+                <span class="char-claw char-claw--l"></span>
+                <span class="char-claw char-claw--r"></span>
+              </div>
+            </div>
+          </div>
+          <span class="char-name">金モグラ</span>
+          <span class="char-points">10点</span>
+        </li>
+        <li>
+          <div class="char-preview" aria-hidden="true">
+            <div class="character bomb mini">
+              <div class="char-bomb-wrap">
+                <span class="char-fuse"></span>
+                <div class="char-bomb-body">
+                  <span class="char-highlight"></span>
+                  <span class="char-eye char-eye--l"></span>
+                  <span class="char-eye char-eye--r"></span>
+                  <span class="char-mouth char-mouth--worry"></span>
+                  <span class="char-sweat"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="char-name">爆弾</span>
+          <span class="char-points char-points--minus">-5点</span>
+        </li>
+      </ul>
+    </section>
+
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="label">スコア</span>
+        <span id="score" class="value">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">残り時間</span>
+        <span id="timer" class="value">30</span>
+        <span class="unit">秒</span>
+      </div>
+      <div class="status-item status-item--highscore">
+        <span class="label">ハイスコア</span>
+        <span id="highscore" class="value">0</span>
+      </div>
+    </div>
+
+    <div id="combo-display" class="combo-display" aria-live="polite">
+      コンボ: <span id="combo-count">0</span>
+      <span id="combo-multiplier" class="combo-multiplier"></span>
+    </div>
+
+    <fieldset class="difficulty" id="difficulty-fieldset">
+      <legend class="difficulty-label">難易度</legend>
+      <div class="difficulty-buttons">
+        <button type="button" class="diff-btn" data-difficulty="easy">かんたん</button>
+        <button type="button" class="diff-btn active" data-difficulty="normal">ふつう</button>
+        <button type="button" class="diff-btn" data-difficulty="hard">むずかしい</button>
+      </div>
+    </fieldset>
+
+    <div class="play-area">
+      <div id="countdown-overlay" class="countdown-overlay hidden" aria-hidden="true"></div>
+      <div id="board" class="board" aria-label="もぐらの穴"></div>
+    </div>
+
+    <div class="controls">
+      <button id="start-btn" class="start-btn" type="button">▶ スタート</button>
+      <p id="message" class="message">難易度を選んでスタート！</p>
+    </div>
+
+    <div id="record-banner" class="record-banner hidden" aria-live="assertive">
+      <span class="record-banner-text">NEW RECORD!</span>
+      <span class="record-banner-spark" aria-hidden="true">✦</span>
+      <span class="record-banner-spark record-banner-spark--2" aria-hidden="true">✦</span>
+    </div>
+
+    <div id="result-overlay" class="result-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <div class="result-card">
+        <p class="result-label">リザルト</p>
+        <h2 id="result-title" class="result-title">おしまい！</h2>
+        <dl class="result-stats">
+          <div class="result-stat">
+            <dt>スコア</dt>
+            <dd id="result-score">0</dd>
+          </div>
+          <div class="result-stat">
+            <dt>ハイスコア</dt>
+            <dd id="result-highscore">0</dd>
+          </div>
+          <div class="result-stat">
+            <dt>最大コンボ</dt>
+            <dd id="result-combo">0</dd>
+          </div>
+          <div class="result-stat result-stat--rank">
+            <dt>ランク</dt>
+            <dd id="result-rank" class="result-rank">C</dd>
+          </div>
+        </dl>
+        <div class="result-actions">
+          <button type="button" id="result-close-btn" class="result-close-btn">もう一度</button>
+          <button type="button" id="result-quit-btn" class="result-quit-btn">終了</button>
+        </div>
+      </div>
+    </div>
+
+    <section id="ranking-panel" class="ranking-panel hidden" aria-label="ランキング">
+      <div class="ranking-header">
+        <p id="ranking-date" class="ranking-date"></p>
+        <h2 class="ranking-title">🏆 今日のランキング</h2>
+      </div>
+      <ol id="ranking-list" class="ranking-list"></ol>
+    </section>
+
+    <details class="how-to-play">
+      <summary>📖 遊び方</summary>
+      <ul>
+        <li>難易度を選んで <strong>スタート</strong> を押す（30秒）</li>
+        <li><strong>もぐら</strong> 1点 / <strong>エイリアン</strong> 5点 / <strong>金モグラ</strong> 10点</li>
+        <li><strong>爆弾</strong>は叩くと -5点＆コンボリセット（避けよう！）</li>
+        <li><strong>3コンボ以上</strong>で2倍、<strong>6コンボ以上</strong>で3倍（爆弾以外）</li>
+        <li>空振りや見逃しでもコンボリセット</li>
+        <li>スタート後は <strong>3・2・1・GO!</strong> のカウントダウン</li>
+        <li>終了後にリザルト・ランキング・ハイスコアが表示される</li>
+        <li>iPhoneでは「ホーム画面に追加」でアプリのように遊べる</li>
+      </ul>
+    </details>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

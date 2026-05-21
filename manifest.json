@@ -1,0 +1,28 @@
+{
+  "name": "もぐら叩き",
+  "short_name": "もぐら叩き",
+  "description": "かわいいもぐら叩きゲーム。30秒でスコアを競おう！",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+  "display": "standalone",
+  "background_color": "#a8e6cf",
+  "theme_color": "#a8e6cf",
+  "orientation": "portrait",
+  "lang": "ja",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
