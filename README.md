@@ -48,13 +48,17 @@ python3 -m http.server 8765
 
 ```
 mole-game/
-├── index.html          # メイン画面
-├── style.css           # デザイン
-├── script.js           # ゲームロジック
-├── manifest.json       # PWA 設定
-├── service-worker.js   # オフライン対応
-├── icons/icon.svg      # アプリアイコン
-├── .nojekyll           # GitHub Pages 用
+├── index.html               # メイン画面
+├── style.css                # デザイン
+├── script.js                # ゲームロジック
+├── supabase-config.js       # Supabase 接続設定（要作成）
+├── supabase-config.example.js
+├── supabase-ranking.js      # ランキング API 処理
+├── supabase-setup.sql       # DB 初期化 SQL
+├── manifest.json            # PWA 設定
+├── service-worker.js        # オフライン対応
+├── icons/icon.svg           # アプリアイコン
+├── .nojekyll                # GitHub Pages 用
 └── README.md
 ```
 
@@ -67,10 +71,43 @@ mole-game/
 
 ## データの保存
 
-以下はブラウザの `localStorage` に保存されます（ページを閉じても残ります）。
+### 端末内（localStorage）
 
 - ハイスコア
-- ランキング上位5件（スコア・日時・難易度）
+- コイン・図鑑・ミッションなど
+
+### オンラインランキング（Supabase・任意）
+
+全員で共有する **ランキング TOP10** を Supabase に保存できます。
+
+#### セットアップ手順
+
+1. [Supabase](https://supabase.com) でプロジェクトを作成
+2. **SQL Editor** で `supabase-setup.sql` の内容を実行（テーブル＋RLS）
+3. **Project Settings → API** から次をコピー
+   - Project URL
+   - `anon` `public` キー
+4. リポジトリで設定ファイルを用意
+
+```bash
+cp supabase-config.example.js supabase-config.js
+```
+
+5. `supabase-config.js` を編集
+
+```javascript
+window.SUPABASE_CONFIG = {
+  url: "https://xxxxx.supabase.co",
+  anonKey: "eyJhbGciOi...",
+  tableName: "rankings",
+  enabled: true,  // ← true にする
+};
+```
+
+6. ローカルまたは GitHub Pages でゲームを開き、プレイ後に **ランキング** ボタンで TOP10 を確認
+
+> `enabled: false` のときは、これまで通り **この端末だけ** のランキング（localStorage）になります。  
+> `supabase-config.js` は `.gitignore` に入れているため、**anon キーを Git に上げない** で済みます（公開時は各自の `supabase-config.js` をデプロイに含めるか、CI で注入してください）。
 
 ## 技術
 

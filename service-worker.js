@@ -1,9 +1,11 @@
-const CACHE_NAME = "mole-game-v25";
+const CACHE_NAME = "mole-game-v27";
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
+  "./supabase-config.js",
+  "./supabase-ranking.js",
   "./manifest.json",
   "./icons/icon.svg",
 ];

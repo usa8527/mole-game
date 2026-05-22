@@ -314,7 +314,7 @@
   <section id="ranking-panel" class="ranking-panel hidden" aria-label="ランキング">
     <div class="ranking-header">
       <h2 class="ranking-title">🏆 ランキング TOP10</h2>
-      <p class="ranking-subtitle">この端末の記録（名前・スコア・日付）</p>
+      <p id="ranking-subtitle" class="ranking-subtitle">読み込み中...</p>
     </div>
     <ol id="ranking-list" class="ranking-list"></ol>
   </section>
@@ -436,6 +436,17 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
+      url: "",
+      anonKey: "",
+      tableName: "rankings",
+      enabled: false,
+    };
+  </script>
+  <script src="supabase-ranking.js"></script>
   <script src="script.js"></script>
 </body>
-</h
+</html>

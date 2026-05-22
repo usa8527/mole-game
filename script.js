@@ -316,6 +316,7 @@ const comboCountEl = document.getElementById("combo-count");
 const comboMultiplierEl = document.getElementById("combo-multiplier");
 const rankingPanel = document.getElementById("ranking-panel");
 const rankingList = document.getElementById("ranking-list");
+const rankingSubtitleEl = document.getElementById("ranking-subtitle");
 const rankingBtn = document.getElementById("ranking-btn");
 const playerNameInput = document.getElementById("player-name");
 const diffButtons = document.querySelectorAll(".diff-btn");
@@ -1338,7 +1339,7 @@ function toggleRanking() {
   if (stageOverlay) stageOverlay.classList.add("hidden");
   rankingPanel.classList.toggle("hidden");
   if (!rankingPanel.classList.contains("hidden")) {
-    renderRankingList();
+    void renderRankingList();
   }
   syncUiBackdrop();
 }
@@ -1598,11 +1599,54 @@ function saveRanking(list) {
   localStorage.setItem(RANKING_KEY, JSON.stringify(list));
 }
 
-function addToRanking(entry) {
+function addToRankingLocal(entry) {
   const list = loadRanking();
   list.push(normalizeRankingEntry(entry));
   list.sort((a, b) => b.score - a.score);
   saveRanking(list.slice(0, RANKING_LIMIT));
+}
+
+async function persistRankingScore(entry) {
+  const normalized = normalizeRankingEntry(entry);
+  if (window.MoleRanking?.isConfigured?.()) {
+    const result = await window.MoleRanking.submitScore(normalized);
+    if (result?.source === "supabase" && messageEl && !isPlaying) {
+      messageEl.textContent = "ランキングに記録したよ！";
+    } else if (result?.fallback && messageEl && !isPlaying) {
+      messageEl.textContent =
+        "ランキング送信に失敗したよ（端末内には保存済み）";
+    }
+    return result;
+  }
+  if (window.MoleRanking?.submitScore) {
+    await window.MoleRanking.submitScore(normalized);
+    return;
+  }
+  addToRankingLocal(normalized);
+}
+
+function addToRanking(entry) {
+  void persistRankingScore(entry);
+}
+
+function getDifficultyLabel(key) {
+  return DIFFICULTY[key]?.label || key;
+}
+
+function updateRankingSubtitle(source, fallback) {
+  if (!rankingSubtitleEl) return;
+  if (source === "supabase" && !fallback) {
+    rankingSubtitleEl.textContent =
+      "みんなの記録 TOP10（Supabase・名前・スコア・日付）";
+    return;
+  }
+  if (fallback) {
+    rankingSubtitleEl.textContent =
+      "オンライン取得に失敗したため、この端末の記録を表示中";
+    return;
+  }
+  rankingSubtitleEl.textContent =
+    "この端末の記録 TOP10（Supabase 未設定時）";
 }
 
 function formatDate(iso) {
@@ -1624,10 +1668,8 @@ function getRankRowClass(rank) {
   return "";
 }
 
-function renderRankingList() {
+function renderRankingListHtml(list) {
   if (!rankingList) return;
-  const list = loadRanking();
-
   if (list.length === 0) {
     rankingList.innerHTML =
       '<li class="ranking-empty">まだ記録がありません</li>';
@@ -1637,6 +1679,7 @@ function renderRankingList() {
   rankingList.innerHTML = list
     .map((item, i) => {
       const rank = i + 1;
+      const diffLabel = getDifficultyLabel(item.difficulty);
       return `
       <li class="${getRankRowClass(rank)}">
         <span class="ranking-rank-badge">${rank}位</span>
@@ -1644,12 +1687,35 @@ function renderRankingList() {
         <span class="rank-body">
           <span class="rank-name">${escapeHtml(item.name)}</span>
           <span class="rank-score">${item.score} 点</span>
-          <span class="rank-meta">${formatDate(item.date)}</span>
+          <span class="rank-meta">${formatDate(item.date)}・${escapeHtml(diffLabel)}</span>
         </span>
       </li>
     `;
     })
     .join("");
+}
+
+async function renderRankingList() {
+  if (!rankingList) return;
+  rankingList.innerHTML =
+    '<li class="ranking-loading">ランキングを読み込み中...</li>';
+  if (rankingSubtitleEl) {
+    rankingSubtitleEl.textContent = "読み込み中...";
+  }
+
+  let list = loadRanking();
+  let source = "local";
+  let fallback = false;
+
+  if (window.MoleRanking?.fetchTop10) {
+    const result = await window.MoleRanking.fetchTop10();
+    list = result.list || [];
+    source = result.source || "local";
+    fallback = Boolean(result.fallback);
+  }
+
+  updateRankingSubtitle(source, fallback);
+  renderRankingListHtml(list);
 }
 
 function getScoreRank(score) {
@@ -3452,7 +3518,7 @@ function endGame() {
   const playerName = getPlayerName();
 
   if (finalScore > 0) {
-    addToRanking({
+    void persistRankingScore({
       name: playerName,
       score: finalScore,
       date: new Date().toISOString(),
@@ -3482,7 +3548,6 @@ function endGame() {
   setPlayerNameInputEnabled(true);
   showResultOverlay(finalScore, isNewRecord, playerName);
   checkSessionMissions(finalScore, maxCombo);
-  renderRankingList();
   updateSubControls();
 }
 

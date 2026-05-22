@@ -3831,6 +3831,15 @@ body {
   margin-top: 2px;
 }
 
+.ranking-loading {
+  text-align: center;
+  padding: 20px 12px;
+  color: #8d6e63;
+  font-size: 0.9rem;
+  font-weight: bold;
+  list-style: none;
+}
+
 .ranking-empty {
   text-align: center;
   color: #8d6e63;
