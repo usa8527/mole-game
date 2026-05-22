@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="もぐら叩き">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>もぐら叩き</title>
+  <title>モグラパニック！</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
@@ -24,13 +24,76 @@
     <span class="grass-blade grass-blade--2"></span>
     <span class="grass-blade grass-blade--3"></span>
     <span class="grass-blade grass-blade--4"></span>
+    <div id="stage-decor" class="stage-decor" aria-hidden="true"></div>
   </div>
 
-  <div id="game-container" class="game-container">
+  <div id="title-screen" class="title-screen" role="banner">
+    <div class="title-screen-panel">
+      <p class="title-screen-tag">もぐら叩きゲーム</p>
+      <h1 class="title-logo" aria-label="モグラパニック！">
+        <span class="title-logo-text">モグラパニック！</span>
+      </h1>
+
+      <div class="title-showcase" aria-hidden="true">
+        <div id="title-showcase-hole" class="title-showcase-hole hole up type-mole">
+          <div class="hole-inner">
+            <div class="hole-pit" aria-hidden="true"></div>
+            <span class="hole-rim" aria-hidden="true"></span>
+            <div id="title-showcase-slot" class="char-slot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="title-status" aria-label="プレイ状況">
+        <p class="title-status-item">
+          <span class="title-status-label">🪙 コイン</span>
+          <span id="title-coin-count" class="title-status-value">0</span>
+        </p>
+        <p id="title-skin-display" class="title-status-item">スキン: もぐら</p>
+        <p id="title-stage-display" class="title-status-item">📍 草原ステージ</p>
+      </div>
+
+      <section class="title-missions" aria-label="今日のミッション">
+        <h2 class="title-missions-heading">📋 今日のミッション</h2>
+        <ul id="title-missions-list" class="title-missions-list"></ul>
+      </section>
+
+      <fieldset class="difficulty title-difficulty" id="difficulty-fieldset">
+        <legend class="difficulty-label">難易度</legend>
+        <div class="difficulty-buttons">
+          <button type="button" class="diff-btn" data-difficulty="easy">簡単</button>
+          <button type="button" class="diff-btn active" data-difficulty="normal">普通</button>
+          <button type="button" class="diff-btn" data-difficulty="hard">難しい</button>
+        </div>
+      </fieldset>
+
+      <div class="title-actions">
+        <button id="start-btn" class="title-start-btn start-btn" type="button">▶ スタート</button>
+        <div class="title-actions-grid">
+          <button type="button" id="gacha-btn" class="title-menu-btn gacha-btn">🎁 ガチャ</button>
+          <button type="button" id="zukan-btn" class="title-menu-btn zukan-btn">📖 図鑑</button>
+          <button type="button" id="mission-btn" class="title-menu-btn mission-btn">
+            📋 ミッション
+            <span id="mission-badge" class="mission-btn-badge hidden" aria-hidden="true">!</span>
+          </button>
+          <button type="button" id="shop-btn" class="title-menu-btn shop-btn">🛍️ ショップ</button>
+          <button type="button" id="stage-btn" class="title-menu-btn stage-btn">🗺️ ステージ</button>
+          <button type="button" id="ranking-btn" class="title-menu-btn ranking-btn">🏆 ランキング</button>
+        </div>
+        <button type="button" id="login-bonus-btn" class="title-login-btn login-bonus-btn">🌟 ログインボーナス (+50🪙)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-container" class="game-container game-screen-hidden">
+    <div class="combo-soft-glow" aria-hidden="true"></div>
     <div class="combo-rainbow-glow" aria-hidden="true"></div>
+    <div class="screen-flash" aria-hidden="true"></div>
+    <div class="boss-red-pulse" aria-hidden="true"></div>
     <header class="header">
       <h1>もぐら叩き</h1>
       <p class="subtitle">30秒でスコアを伸ばそう！3コンボで倍率アップ</p>
+      <p id="stage-display" class="stage-display">📍 草原ステージ</p>
     </header>
 
     <section class="char-guide" aria-label="キャラクター説明">
@@ -107,6 +170,31 @@
         </li>
         <li>
           <div class="char-preview" aria-hidden="true">
+            <div class="character rainbow mini">
+              <span class="char-rainbow-ring"></span>
+              <span class="char-spark char-spark--1"></span>
+              <span class="char-spark char-spark--2"></span>
+              <div class="char-body">
+                <div class="char-torso"></div>
+                <div class="char-head">
+                  <span class="char-eye char-eye--l"><span class="char-shine"></span></span>
+                  <span class="char-eye char-eye--r"><span class="char-shine"></span></span>
+                  <span class="char-cheek char-cheek--l"></span>
+                  <span class="char-cheek char-cheek--r"></span>
+                  <span class="char-snout">
+                    <span class="char-nose-star"></span>
+                  </span>
+                </div>
+                <span class="char-claw char-claw--l"></span>
+                <span class="char-claw char-claw--r"></span>
+              </div>
+            </div>
+          </div>
+          <span class="char-name">虹モグラ</span>
+          <span class="char-points char-points--rainbow">50点</span>
+        </li>
+        <li>
+          <div class="char-preview" aria-hidden="true">
             <div class="character bomb mini">
               <div class="char-bomb-wrap">
                 <span class="char-fuse"></span>
@@ -122,6 +210,25 @@
           </div>
           <span class="char-name">爆弾</span>
           <span class="char-points char-points--minus">-5点</span>
+        </li>
+        <li>
+          <div class="char-preview" aria-hidden="true">
+            <div class="character boss mini boss-stage-3">
+              <span class="char-crown"></span>
+              <div class="char-body">
+                <div class="char-torso"></div>
+                <div class="char-head">
+                  <span class="char-eye char-eye--l"><span class="char-shine"></span></span>
+                  <span class="char-eye char-eye--r"><span class="char-shine"></span></span>
+                  <span class="char-cheek char-cheek--l"></span>
+                  <span class="char-cheek char-cheek--r"></span>
+                  <span class="char-snout"><span class="char-nose-star"></span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="char-name">ボスモグラ</span>
+          <span class="char-points char-points--boss">100点</span>
         </li>
       </ul>
     </section>
@@ -147,83 +254,186 @@
       <span id="combo-multiplier" class="combo-multiplier"></span>
     </div>
 
-    <fieldset class="difficulty" id="difficulty-fieldset">
-      <legend class="difficulty-label">難易度</legend>
-      <div class="difficulty-buttons">
-        <button type="button" class="diff-btn" data-difficulty="easy">かんたん</button>
-        <button type="button" class="diff-btn active" data-difficulty="normal">ふつう</button>
-        <button type="button" class="diff-btn" data-difficulty="hard">むずかしい</button>
-      </div>
-    </fieldset>
+    <div class="player-name-box">
+      <label for="player-name" class="player-name-label">なまえ</label>
+      <input
+        type="text"
+        id="player-name"
+        class="player-name-input"
+        maxlength="12"
+        placeholder="ゲスト"
+        autocomplete="nickname"
+        enterkeyhint="done"
+      >
+    </div>
 
     <div class="play-area">
       <div id="countdown-overlay" class="countdown-overlay hidden" aria-hidden="true"></div>
       <div id="board" class="board" aria-label="もぐらの穴"></div>
     </div>
 
-    <div class="controls">
-      <button id="start-btn" class="start-btn" type="button">▶ スタート</button>
+    <div id="game-actions" class="controls game-actions">
+      <p id="skin-badge" class="skin-badge hidden" aria-hidden="true">スキン: もぐら</p>
+      <span id="coin-count" class="visually-hidden" aria-hidden="true">0</span>
+      <p id="theme-badge" class="theme-badge hidden" aria-hidden="true">テーマ: ふつう</p>
       <p id="message" class="message">難易度を選んでスタート！</p>
     </div>
-
-    <div id="record-banner" class="record-banner hidden" aria-live="assertive">
-      <span class="record-banner-text">NEW RECORD!</span>
-      <span class="record-banner-spark" aria-hidden="true">✦</span>
-      <span class="record-banner-spark record-banner-spark--2" aria-hidden="true">✦</span>
-    </div>
-
-    <div id="result-overlay" class="result-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
-      <div class="result-card">
-        <p class="result-label">リザルト</p>
-        <h2 id="result-title" class="result-title">おしまい！</h2>
-        <dl class="result-stats">
-          <div class="result-stat">
-            <dt>スコア</dt>
-            <dd id="result-score">0</dd>
-          </div>
-          <div class="result-stat">
-            <dt>ハイスコア</dt>
-            <dd id="result-highscore">0</dd>
-          </div>
-          <div class="result-stat">
-            <dt>最大コンボ</dt>
-            <dd id="result-combo">0</dd>
-          </div>
-          <div class="result-stat result-stat--rank">
-            <dt>ランク</dt>
-            <dd id="result-rank" class="result-rank">C</dd>
-          </div>
-        </dl>
-        <div class="result-actions">
-          <button type="button" id="result-close-btn" class="result-close-btn">もう一度</button>
-          <button type="button" id="result-quit-btn" class="result-quit-btn">終了</button>
-        </div>
-      </div>
-    </div>
-
-    <section id="ranking-panel" class="ranking-panel hidden" aria-label="ランキング">
-      <div class="ranking-header">
-        <p id="ranking-date" class="ranking-date"></p>
-        <h2 class="ranking-title">🏆 今日のランキング</h2>
-      </div>
-      <ol id="ranking-list" class="ranking-list"></ol>
-    </section>
 
     <details class="how-to-play">
       <summary>📖 遊び方</summary>
       <ul>
-        <li>難易度を選んで <strong>スタート</strong> を押す（30秒）</li>
-        <li><strong>もぐら</strong> 1点 / <strong>エイリアン</strong> 5点 / <strong>金モグラ</strong> 10点</li>
-        <li><strong>爆弾</strong>は叩くと -5点＆コンボリセット（避けよう！）</li>
+        <li>タイトルで <strong>スタート</strong> → 難易度を選んでプレイ（30秒）</li>
+        <li><strong>もぐら</strong> 1点 / <strong>エイリアン</strong> 5点 / <strong>金モグラ</strong> 10点 / <strong>虹モグラ</strong> 50点（超レア）</li>
+        <li><strong>爆弾</strong>は叩くと -5点＆コンボリセット（見送ればコンボ維持！）</li>
+        <li><strong>15コンボ以上</strong>で低確率の<strong>ボスモグラ</strong>（HP3・倒すと100点）</li>
         <li><strong>3コンボ以上</strong>で2倍、<strong>6コンボ以上</strong>で3倍（爆弾以外）</li>
         <li>空振りや見逃しでもコンボリセット</li>
         <li>スタート後は <strong>3・2・1・GO!</strong> のカウントダウン</li>
-        <li>終了後にリザルト・ランキング・ハイスコアが表示される</li>
+        <li>名前を入れてからスタート（空欄は<strong>ゲスト</strong>）</li>
+        <li>終了後にリザルト表示・<strong>ランキング</strong>ボタンでTOP10を見られる</li>
+        <li>ゲーム終了で <strong>コイン</strong> 獲得（スコア÷2）→ <strong>ガチャ</strong>でキャラ収集</li>
+        <li>ガチャ排出：Nもぐら / R金 / SR虹 / SSR宇宙モグラ（特殊能力あり）</li>
+        <li>図鑑で<strong>スキン</strong>を選ぶと能力が発動</li>
+        <li><strong>ステージ</strong>を選ぶと背景や出現率が変わる（解放条件あり）</li>
+        <li><strong>スキンショップ</strong>でコインを使い画面テーマを購入・変更できる</li>
+        <li><strong>ミッション</strong>を達成するとコインや限定スキンがもらえる</li>
+        <li><strong>ログインボーナス</strong>は1日1回（+50🪙）</li>
         <li>iPhoneでは「ホーム画面に追加」でアプリのように遊べる</li>
       </ul>
     </details>
   </div>
 
+  <section id="zukan-panel" class="zukan-panel hidden" aria-label="図鑑">
+    <h2 class="zukan-title">📖 モグラ図鑑</h2>
+    <p class="zukan-subtitle">入手済みキャラをタップしてスキンにしよう！</p>
+    <ul id="zukan-list" class="zukan-list"></ul>
+  </section>
+
+  <section id="ranking-panel" class="ranking-panel hidden" aria-label="ランキング">
+    <div class="ranking-header">
+      <h2 class="ranking-title">🏆 ランキング TOP10</h2>
+      <p class="ranking-subtitle">この端末の記録（名前・スコア・日付）</p>
+    </div>
+    <ol id="ranking-list" class="ranking-list"></ol>
+  </section>
+
+  <div id="record-banner" class="record-banner hidden" aria-live="assertive">
+    <span class="record-banner-text">NEW RECORD!</span>
+    <span class="record-banner-spark" aria-hidden="true">✦</span>
+    <span class="record-banner-spark record-banner-spark--2" aria-hidden="true">✦</span>
+  </div>
+
+  <div id="result-overlay" class="result-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="result-card">
+      <p class="result-label">リザルト</p>
+      <h2 id="result-title" class="result-title">おしまい！</h2>
+      <p id="result-new-record" class="result-new-record hidden">🎉 NEW RECORD!</p>
+      <dl class="result-stats">
+        <div class="result-stat">
+          <dt>プレイヤー</dt>
+          <dd id="result-player-name">ゲスト</dd>
+        </div>
+        <div class="result-stat">
+          <dt>スコア</dt>
+          <dd id="result-score">0</dd>
+        </div>
+        <div class="result-stat result-stat--coins">
+          <dt>獲得コイン</dt>
+          <dd id="result-coins">+0 🪙</dd>
+        </div>
+        <div class="result-stat">
+          <dt>ハイスコア</dt>
+          <dd id="result-highscore">0</dd>
+        </div>
+        <div class="result-stat">
+          <dt>最大コンボ</dt>
+          <dd id="result-combo">0</dd>
+        </div>
+        <div class="result-stat result-stat--rank">
+          <dt>ランク</dt>
+          <dd class="result-rank-box">
+            <span class="result-rank-spark" aria-hidden="true">✦</span>
+            <span id="result-rank" class="result-rank">C</span>
+            <span class="result-rank-spark result-rank-spark--r" aria-hidden="true">✦</span>
+          </dd>
+        </div>
+        <p id="result-rank-message" class="result-rank-message"></p>
+      </dl>
+      <div class="result-actions">
+        <button type="button" id="result-close-btn" class="result-close-btn">もう一度</button>
+        <button type="button" id="result-quit-btn" class="result-quit-btn">終了</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mission-complete-overlay" class="mission-complete-overlay hidden" aria-live="assertive">
+    <div class="mission-complete-card">
+      <p class="mission-complete-title">MISSION COMPLETE!</p>
+      <p id="mission-complete-reward" class="mission-complete-reward"></p>
+    </div>
+  </div>
+
+  <div id="stage-overlay" class="stage-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="stage-title">
+    <div class="stage-modal">
+      <h2 id="stage-title" class="stage-title">🗺️ ステージ選択</h2>
+      <p class="stage-subtitle">ステージで背景・演出・出現率が変わるよ！</p>
+      <ul id="stage-list" class="stage-list"></ul>
+      <button type="button" id="stage-close-btn" class="stage-close-btn">閉じる</button>
+    </div>
+  </div>
+
+  <div id="shop-overlay" class="shop-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shop-title">
+    <div class="shop-modal">
+      <h2 id="shop-title" class="shop-title">🛍️ スキンショップ</h2>
+      <p class="shop-subtitle">コインでテーマを購入して見た目を変えよう！</p>
+      <p class="shop-coins">所持: <span id="shop-coin-count">0</span> 🪙</p>
+      <ul id="shop-list" class="shop-list"></ul>
+      <button type="button" id="shop-close-btn" class="shop-close-btn">閉じる</button>
+    </div>
+  </div>
+
+  <div id="mission-overlay" class="mission-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="mission-title">
+    <div class="mission-modal">
+      <h2 id="mission-title" class="mission-title">📋 ミッション</h2>
+      <p class="mission-subtitle">達成すると報酬がもらえるよ！</p>
+      <ul id="mission-list" class="mission-list"></ul>
+      <button type="button" id="mission-close-btn" class="mission-close-btn">閉じる</button>
+    </div>
+  </div>
+
+  <div id="gacha-overlay" class="gacha-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gacha-title">
+    <div class="gacha-modal">
+      <h2 id="gacha-title" class="gacha-title">もぐらガチャ</h2>
+      <p class="gacha-cost">100 🪙 で1回</p>
+      <div class="gacha-light-burst" aria-hidden="true"></div>
+      <div class="gacha-stage">
+        <p id="gacha-suspense" class="gacha-suspense hidden" aria-hidden="true">・・・</p>
+        <div id="gacha-capsule-wrap" class="gacha-capsule-wrap">
+          <div id="gacha-capsule" class="gacha-capsule">
+            <span class="gacha-capsule-top"></span>
+            <span class="gacha-capsule-bottom"></span>
+            <span class="gacha-capsule-shine" aria-hidden="true"></span>
+          </div>
+          <div class="gacha-sparkles" aria-hidden="true">
+            <span class="gacha-sparkle"></span>
+            <span class="gacha-sparkle"></span>
+            <span class="gacha-sparkle"></span>
+            <span class="gacha-sparkle"></span>
+            <span class="gacha-sparkle"></span>
+            <span class="gacha-sparkle"></span>
+          </div>
+        </div>
+        <div id="gacha-result" class="gacha-result hidden">
+          <span id="gacha-rarity-badge" class="gacha-rarity-badge">N</span>
+          <div id="gacha-result-preview" class="gacha-result-preview"></div>
+          <p id="gacha-result-name" class="gacha-result-name"></p>
+          <p id="gacha-result-msg" class="gacha-result-msg"></p>
+        </div>
+      </div>
+      <button type="button" id="gacha-close-btn" class="gacha-close-btn" disabled>閉じる</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
-</html>
+</h

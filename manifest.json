@@ -1,6 +1,6 @@
 {
-  "name": "もぐら叩き",
-  "short_name": "もぐら叩き",
+  "name": "モグラパニック！",
+  "short_name": "モグラパニック",
   "description": "かわいいもぐら叩きゲーム。30秒でスコアを競おう！",
   "start_url": "./index.html",
   "scope": "./",

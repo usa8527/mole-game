@@ -1,4 +1,4 @@
-const CACHE_NAME = "mole-game-v9";
+const CACHE_NAME = "mole-game-v24";
 const ASSETS = [
   "./",
   "./index.html",
