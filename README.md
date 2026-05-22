@@ -57,17 +57,41 @@ mole-game/
 ├── supabase-setup.sql       # DB 初期化 SQL
 ├── manifest.json            # PWA 設定
 ├── service-worker.js        # オフライン対応
-├── icons/icon.svg           # アプリアイコン
+├── icons/icon.svg           # ベクターアイコン
+├── icons/icon-180.png       # iPhone 用
+├── icons/icon-192.png       # PWA 用
+├── icons/icon-512.png       # PWA 用
+├── scripts/generate-icons.py
+├── .nojekyll                # GitHub Pages 用
 ├── .nojekyll                # GitHub Pages 用
 └── README.md
 ```
 
 ## PWA（ホーム画面に追加）
 
-スマホのブラウザでゲームを開き、**ホーム画面に追加**するとアプリのように起動できます。
+iPhone / Android で **ホーム画面に追加** すると、アプリのように全画面で起動できます。
 
-- `manifest.json` … アプリ名・アイコン・色の設定
-- `service-worker.js` … 一度読み込んだファイルをキャッシュ
+### iPhone の手順
+
+1. Safari でゲームの URL を開く（GitHub Pages なら `https://<ユーザー名>.github.io/mole-game/`）
+2. 共有ボタン → **ホーム画面に追加**
+3. 名前は **モグラパニック** と表示されます
+
+### 構成
+
+| ファイル | 役割 |
+|----------|------|
+| `manifest.json` | アプリ名・アイコン・テーマ色・起動 URL |
+| `service-worker.js` | オフライン用キャッシュ（相対パスで GitHub Pages 対応） |
+| `icons/icon-180.png` | iPhone 用ホーム画面アイコン |
+| `icons/icon-192.png` / `icon-512.png` | Android / インストール用 |
+| `.nojekyll` | GitHub Pages で Jekyll を無効化 |
+
+アイコン PNG を再生成する場合:
+
+```bash
+python3 scripts/generate-icons.py
+```
 
 ## データの保存
 

@@ -318,7 +318,10 @@ const rankingPanel = document.getElementById("ranking-panel");
 const rankingList = document.getElementById("ranking-list");
 const rankingSubtitleEl = document.getElementById("ranking-subtitle");
 const rankingBtn = document.getElementById("ranking-btn");
-const playerNameInput = document.getElementById("player-name");
+const resultNameInput = document.getElementById("result-name-input");
+const resultNameSection = document.getElementById("result-name-section");
+const resultSaveRankingBtn = document.getElementById("result-save-ranking-btn");
+const resultRankingStatusEl = document.getElementById("result-ranking-status");
 const diffButtons = document.querySelectorAll(".diff-btn");
 const countdownOverlay = document.getElementById("countdown-overlay");
 const resultOverlay = document.getElementById("result-overlay");
@@ -653,6 +656,8 @@ let hideTimer = null;
 let activeHole = null;
 let isPlaying = false;
 let onTitleScreen = true;
+let pendingRankingEntry = null;
+let rankingSaved = false;
 let audioCtx = null;
 let bgmGainNode = null;
 let sfxGainNode = null;
@@ -1549,28 +1554,114 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
-function getPlayerName() {
-  if (!playerNameInput) return DEFAULT_PLAYER_NAME;
-  const raw = playerNameInput.value.trim();
+function getResultPlayerName() {
+  if (!resultNameInput) return DEFAULT_PLAYER_NAME;
+  const raw = resultNameInput.value.trim();
   if (!raw) return DEFAULT_PLAYER_NAME;
   return raw.slice(0, MAX_PLAYER_NAME_LENGTH);
 }
 
-function loadPlayerNameIntoInput() {
-  if (!playerNameInput) return;
-  const saved = localStorage.getItem(PLAYER_NAME_KEY) || "";
-  playerNameInput.value = saved;
+function loadSavedNameIntoResultInput() {
+  if (!resultNameInput) return;
+  resultNameInput.value = localStorage.getItem(PLAYER_NAME_KEY) || "";
 }
 
-function persistPlayerNameFromInput() {
-  if (!playerNameInput) return;
-  const trimmed = playerNameInput.value.trim().slice(0, MAX_PLAYER_NAME_LENGTH);
-  playerNameInput.value = trimmed;
-  localStorage.setItem(PLAYER_NAME_KEY, trimmed);
+function persistResultPlayerName() {
+  const name = getResultPlayerName();
+  const stored = name === DEFAULT_PLAYER_NAME ? "" : name;
+  localStorage.setItem(PLAYER_NAME_KEY, stored);
+  if (resultNameInput && name !== DEFAULT_PLAYER_NAME) {
+    resultNameInput.value = name;
+  }
 }
 
-function setPlayerNameInputEnabled(enabled) {
-  if (playerNameInput) playerNameInput.disabled = !enabled;
+function updateResultPlayerNamePreview() {
+  const name = getResultPlayerName();
+  if (resultPlayerNameEl) resultPlayerNameEl.textContent = name;
+}
+
+function resetResultRankingForm() {
+  pendingRankingEntry = null;
+  rankingSaved = false;
+  if (resultNameInput) {
+    resultNameInput.disabled = false;
+    loadSavedNameIntoResultInput();
+  }
+  if (resultSaveRankingBtn) {
+    resultSaveRankingBtn.disabled = false;
+    resultSaveRankingBtn.textContent = "🏆 ランキングに記録";
+  }
+  if (resultRankingStatusEl) resultRankingStatusEl.textContent = "";
+  if (resultNameSection) resultNameSection.classList.remove("hidden");
+}
+
+function setupResultRankingForm(finalScore) {
+  rankingSaved = false;
+  if (finalScore > 0) {
+    pendingRankingEntry = {
+      score: finalScore,
+      date: new Date().toISOString(),
+      difficulty: currentDifficulty,
+    };
+  } else {
+    pendingRankingEntry = null;
+  }
+
+  if (resultNameSection) {
+    resultNameSection.classList.toggle("hidden", finalScore <= 0);
+  }
+  loadSavedNameIntoResultInput();
+  updateResultPlayerNamePreview();
+  if (resultRankingStatusEl) {
+    resultRankingStatusEl.textContent =
+      finalScore > 0 ? "名前を入れて「ランキングに記録」をタップ！" : "";
+  }
+  if (resultSaveRankingBtn) {
+    resultSaveRankingBtn.disabled = finalScore <= 0;
+  }
+}
+
+async function submitResultRanking() {
+  if (!pendingRankingEntry || rankingSaved) return;
+
+  const name = getResultPlayerName();
+  persistResultPlayerName();
+  updateResultPlayerNamePreview();
+
+  if (resultSaveRankingBtn) resultSaveRankingBtn.disabled = true;
+  if (resultRankingStatusEl) resultRankingStatusEl.textContent = "送信中...";
+
+  const entry = { ...pendingRankingEntry, name };
+  const result = await persistRankingScore(entry);
+
+  rankingSaved = true;
+  pendingRankingEntry = null;
+
+  if (resultRankingStatusEl) {
+    if (result?.source === "supabase") {
+      resultRankingStatusEl.textContent = "みんなのランキングに記録したよ！";
+    } else if (result?.fallback) {
+      resultRankingStatusEl.textContent =
+        "オンライン保存に失敗（この端末には保存済み）";
+    } else {
+      resultRankingStatusEl.textContent = "ランキングに記録したよ！";
+    }
+  }
+  if (resultSaveRankingBtn) {
+    resultSaveRankingBtn.textContent = "記録済み ✓";
+  }
+}
+
+async function flushPendingRankingIfNeeded() {
+  if (!pendingRankingEntry || rankingSaved) return;
+  if (resultNameInput) resultNameInput.value = "";
+  const entry = {
+    ...pendingRankingEntry,
+    name: DEFAULT_PLAYER_NAME,
+  };
+  await persistRankingScore(entry);
+  rankingSaved = true;
+  pendingRankingEntry = null;
 }
 
 function normalizeRankingEntry(item) {
@@ -1610,12 +1701,6 @@ async function persistRankingScore(entry) {
   const normalized = normalizeRankingEntry(entry);
   if (window.MoleRanking?.isConfigured?.()) {
     const result = await window.MoleRanking.submitScore(normalized);
-    if (result?.source === "supabase" && messageEl && !isPlaying) {
-      messageEl.textContent = "ランキングに記録したよ！";
-    } else if (result?.fallback && messageEl && !isPlaying) {
-      messageEl.textContent =
-        "ランキング送信に失敗したよ（端末内には保存済み）";
-    }
     return result;
   }
   if (window.MoleRanking?.submitScore) {
@@ -2970,6 +3055,7 @@ function hideResultOverlay() {
   if (resultNewRecordEl) {
     resultNewRecordEl.classList.add("hidden");
   }
+  resetResultRankingForm();
 }
 
 function renderTitleMissions() {
@@ -3027,7 +3113,6 @@ function showTitleScreen() {
     startBtn.textContent = "▶ スタート";
   }
   diffButtons.forEach((btn) => (btn.disabled = false));
-  setPlayerNameInputEnabled(true);
 }
 
 function hideTitleScreen() {
@@ -3089,7 +3174,6 @@ function returnToTitleScreen() {
 
   rankingPanel.classList.add("hidden");
   zukanPanel.classList.add("hidden");
-  setPlayerNameInputEnabled(true);
   updateSubControls();
 
   holes.forEach((hole) => {
@@ -3100,11 +3184,9 @@ function returnToTitleScreen() {
   showTitleScreen();
 }
 
-function showResultOverlay(finalScore, isNewRecord, playerName) {
+function showResultOverlay(finalScore, isNewRecord) {
   const rank = getScoreRank(finalScore);
-  if (resultPlayerNameEl) {
-    resultPlayerNameEl.textContent = playerName;
-  }
+  setupResultRankingForm(finalScore);
   if (resultNewRecordEl) {
     resultNewRecordEl.classList.toggle("hidden", !isNewRecord);
   }
@@ -3124,6 +3206,12 @@ function showResultOverlay(finalScore, isNewRecord, playerName) {
 
   if (isNewRecord) {
     showRecordBanner();
+  }
+
+  if (finalScore > 0 && resultNameInput) {
+    setTimeout(() => {
+      resultNameInput.focus({ preventScroll: false });
+    }, 480);
   }
 }
 
@@ -3460,12 +3548,10 @@ function startGame() {
   const diffLabel = DIFFICULTY[currentDifficulty]?.label || "普通";
   messageEl.textContent = `準備中...（${diffLabel}）`;
   messageEl.classList.remove("game-over");
-  persistPlayerNameFromInput();
   bossActive = false;
   clearBossAlert();
   rankingPanel.classList.add("hidden");
   zukanPanel.classList.add("hidden");
-  setPlayerNameInputEnabled(false);
   updateSubControls();
   startBtn.disabled = true;
   startBtn.textContent = "プレイ中...";
@@ -3515,17 +3601,6 @@ function endGame() {
     saveHighScore(finalScore);
   }
 
-  const playerName = getPlayerName();
-
-  if (finalScore > 0) {
-    void persistRankingScore({
-      name: playerName,
-      score: finalScore,
-      date: new Date().toISOString(),
-      difficulty: currentDifficulty,
-    });
-  }
-
   const earnedCoins = calculateCoinsFromScore(finalScore) + sessionBonusCoins;
   if (earnedCoins > 0) addCoins(earnedCoins);
   if (resultCoinsEl) {
@@ -3545,8 +3620,7 @@ function endGame() {
     : `おしまい！ ${finalScore}点（ランク ${rank}）・+${earnedCoins}🪙${bonusText}`;
 
   messageEl.classList.add("game-over");
-  setPlayerNameInputEnabled(true);
-  showResultOverlay(finalScore, isNewRecord, playerName);
+  showResultOverlay(finalScore, isNewRecord);
   checkSessionMissions(finalScore, maxCombo);
   updateSubControls();
 }
@@ -3554,24 +3628,38 @@ function endGame() {
 // --- PWA ---
 
 function registerServiceWorker() {
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
-    });
-  }
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("./service-worker.js", { scope: "./" })
+      .catch((err) => {
+        console.warn("[PWA] Service Worker の登録に失敗:", err);
+      });
+  });
 }
 
-function initPlayerNameUI() {
-  loadPlayerNameIntoInput();
-  if (!playerNameInput) return;
-  playerNameInput.addEventListener("change", persistPlayerNameFromInput);
-  playerNameInput.addEventListener("blur", persistPlayerNameFromInput);
+function initResultNameUI() {
+  if (resultNameInput) {
+    resultNameInput.addEventListener("input", updateResultPlayerNamePreview);
+    resultNameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        void submitResultRanking();
+      }
+    });
+  }
+  if (resultSaveRankingBtn) {
+    resultSaveRankingBtn.addEventListener("click", () => {
+      void submitResultRanking();
+    });
+  }
 }
 
 function initGachaUI() {
   loadCoins();
   loadCollection();
-  initPlayerNameUI();
+  initResultNameUI();
   renderSkinBadge();
   renderZukan();
   updateSubControls();
@@ -3597,10 +3685,16 @@ function initGachaUI() {
 
 startBtn.addEventListener("click", startGame);
 resultCloseBtn.addEventListener("click", () => {
-  hideResultOverlay();
-  startGame();
+  void flushPendingRankingIfNeeded().then(() => {
+    hideResultOverlay();
+    startGame();
+  });
 });
-resultQuitBtn.addEventListener("click", returnToTitleScreen);
+resultQuitBtn.addEventListener("click", () => {
+  void flushPendingRankingIfNeeded().then(() => {
+    returnToTitleScreen();
+  });
+});
 loadHighScore();
 setDifficulty("normal");
 createBoard();

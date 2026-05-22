@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#a8e6cf">
+  <meta name="theme-color" content="#7fd957">
   <meta name="description" content="かわいいもぐら叩きゲーム。30秒でスコアを競おう！">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="もぐら叩き">
+  <meta name="apple-mobile-web-app-title" content="モグラパニック">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
   <title>モグラパニック！</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="scene-bg" aria-hidden="true">
@@ -254,19 +257,6 @@
       <span id="combo-multiplier" class="combo-multiplier"></span>
     </div>
 
-    <div class="player-name-box">
-      <label for="player-name" class="player-name-label">なまえ</label>
-      <input
-        type="text"
-        id="player-name"
-        class="player-name-input"
-        maxlength="12"
-        placeholder="ゲスト"
-        autocomplete="nickname"
-        enterkeyhint="done"
-      >
-    </div>
-
     <div class="play-area">
       <div id="countdown-overlay" class="countdown-overlay hidden" aria-hidden="true"></div>
       <div id="board" class="board" aria-label="もぐらの穴"></div>
@@ -289,7 +279,7 @@
         <li><strong>3コンボ以上</strong>で2倍、<strong>6コンボ以上</strong>で3倍（爆弾以外）</li>
         <li>空振りや見逃しでもコンボリセット</li>
         <li>スタート後は <strong>3・2・1・GO!</strong> のカウントダウン</li>
-        <li>名前を入れてからスタート（空欄は<strong>ゲスト</strong>）</li>
+        <li>終了後に<strong>なまえ</strong>を入れてランキングに記録（空欄は<strong>ゲスト</strong>）</li>
         <li>終了後にリザルト表示・<strong>ランキング</strong>ボタンでTOP10を見られる</li>
         <li>ゲーム終了で <strong>コイン</strong> 獲得（スコア÷2）→ <strong>ガチャ</strong>でキャラ収集</li>
         <li>ガチャ排出：Nもぐら / R金 / SR虹 / SSR宇宙モグラ（特殊能力あり）</li>
@@ -332,8 +322,29 @@
       <p id="result-new-record" class="result-new-record hidden">🎉 NEW RECORD!</p>
       <dl class="result-stats">
         <div class="result-stat">
-          <dt>プレイヤー</dt>
+          <dt>記録名</dt>
           <dd id="result-player-name">ゲスト</dd>
+        </div>
+        <div id="result-name-section" class="result-name-section">
+          <label for="result-name-input" class="result-name-label">ランキング用のなまえ</label>
+          <p class="result-name-hint">空欄のままなら「ゲスト」で記録されます</p>
+          <input
+            type="text"
+            id="result-name-input"
+            class="result-name-input"
+            maxlength="12"
+            placeholder="ゲスト"
+            autocomplete="nickname"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            enterkeyhint="done"
+            inputmode="text"
+          >
+          <button type="button" id="result-save-ranking-btn" class="result-save-ranking-btn">
+            🏆 ランキングに記録
+          </button>
+          <p id="result-ranking-status" class="result-ranking-status" aria-live="polite"></p>
         </div>
         <div class="result-stat">
           <dt>スコア</dt>
@@ -437,7 +448,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
+  <script src="./supabase-config.js"></script>
   <script>
     window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
       url: "",
@@ -446,7 +457,7 @@
       enabled: false,
     };
   </script>
-  <script src="supabase-ranking.js"></script>
-  <script src="script.js"></script>
+  <script src="./supabase-ranking.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>
