@@ -370,6 +370,7 @@ const titleStageDisplayEl = document.getElementById("title-stage-display");
 const titleMissionsListEl = document.getElementById("title-missions-list");
 const titleShowcaseHole = document.getElementById("title-showcase-hole");
 const titleShowcaseSlot = document.getElementById("title-showcase-slot");
+const uiBackdrop = document.getElementById("ui-backdrop");
 const stageBtn = document.getElementById("stage-btn");
 const stageOverlay = document.getElementById("stage-overlay");
 const stageList = document.getElementById("stage-list");
@@ -1256,12 +1257,64 @@ function updateSubControls() {
   updateMissionButtonBadge();
 }
 
+function syncUiBackdrop() {
+  if (!uiBackdrop) return;
+  const zukanOpen = zukanPanel && !zukanPanel.classList.contains("hidden");
+  const rankingOpen = rankingPanel && !rankingPanel.classList.contains("hidden");
+  uiBackdrop.classList.toggle("hidden", !(zukanOpen || rankingOpen));
+}
+
+function closeZukanPanel() {
+  if (zukanPanel) zukanPanel.classList.add("hidden");
+  syncUiBackdrop();
+}
+
+function closeRankingPanel() {
+  if (rankingPanel) rankingPanel.classList.add("hidden");
+  syncUiBackdrop();
+}
+
 function closeAllSidePanels() {
-  zukanPanel.classList.add("hidden");
-  rankingPanel.classList.add("hidden");
+  closeZukanPanel();
+  closeRankingPanel();
   if (missionOverlay) missionOverlay.classList.add("hidden");
   if (shopOverlay) shopOverlay.classList.add("hidden");
   if (stageOverlay) stageOverlay.classList.add("hidden");
+  syncUiBackdrop();
+}
+
+function canDismissMenuPanels() {
+  return !isPlaying && !gachaRunning;
+}
+
+function canDismissGachaOverlay() {
+  if (!gachaOverlay || gachaOverlay.classList.contains("hidden")) return false;
+  if (!gachaRunning) return true;
+  return gachaCloseBtn && !gachaCloseBtn.disabled;
+}
+
+function bindOverlayDismiss(overlay, closeFn, canClose) {
+  if (!overlay) return;
+  overlay.addEventListener("click", (e) => {
+    if (e.target !== overlay) return;
+    if (!canClose()) return;
+    closeFn();
+  });
+}
+
+function initPanelDismiss() {
+  bindOverlayDismiss(missionOverlay, closeMissionModal, canDismissMenuPanels);
+  bindOverlayDismiss(shopOverlay, closeShopModal, canDismissMenuPanels);
+  bindOverlayDismiss(stageOverlay, closeStageModal, canDismissMenuPanels);
+  bindOverlayDismiss(gachaOverlay, closeGachaModal, canDismissGachaOverlay);
+
+  if (uiBackdrop) {
+    uiBackdrop.addEventListener("click", () => {
+      if (!canDismissMenuPanels()) return;
+      closeZukanPanel();
+      closeRankingPanel();
+    });
+  }
 }
 
 function toggleZukan() {
@@ -1269,16 +1322,17 @@ function toggleZukan() {
   if (missionOverlay) missionOverlay.classList.add("hidden");
   if (shopOverlay) shopOverlay.classList.add("hidden");
   if (stageOverlay) stageOverlay.classList.add("hidden");
-  rankingPanel.classList.add("hidden");
+  closeRankingPanel();
   zukanPanel.classList.toggle("hidden");
   if (!zukanPanel.classList.contains("hidden")) {
     renderZukan();
   }
+  syncUiBackdrop();
 }
 
 function toggleRanking() {
   if (isPlaying || gachaRunning) return;
-  zukanPanel.classList.add("hidden");
+  closeZukanPanel();
   if (missionOverlay) missionOverlay.classList.add("hidden");
   if (shopOverlay) shopOverlay.classList.add("hidden");
   if (stageOverlay) stageOverlay.classList.add("hidden");
@@ -1286,17 +1340,21 @@ function toggleRanking() {
   if (!rankingPanel.classList.contains("hidden")) {
     renderRankingList();
   }
+  syncUiBackdrop();
 }
 
 function toggleMission() {
   if (isPlaying || gachaRunning) return;
-  zukanPanel.classList.add("hidden");
-  rankingPanel.classList.add("hidden");
+  const wasOpen = missionOverlay && !missionOverlay.classList.contains("hidden");
+  closeZukanPanel();
+  closeRankingPanel();
   if (shopOverlay) shopOverlay.classList.add("hidden");
   if (stageOverlay) stageOverlay.classList.add("hidden");
   if (!missionOverlay) return;
-  missionOverlay.classList.toggle("hidden");
-  if (!missionOverlay.classList.contains("hidden")) {
+  if (wasOpen) {
+    missionOverlay.classList.add("hidden");
+  } else {
+    missionOverlay.classList.remove("hidden");
     renderMissionList();
   }
 }
@@ -1801,8 +1859,8 @@ function onShopListClick(e) {
 
 function toggleShop() {
   if (isPlaying || gachaRunning) return;
-  zukanPanel.classList.add("hidden");
-  rankingPanel.classList.add("hidden");
+  closeZukanPanel();
+  closeRankingPanel();
   if (missionOverlay) missionOverlay.classList.add("hidden");
   if (stageOverlay) stageOverlay.classList.add("hidden");
   if (!shopOverlay) return;
@@ -2059,8 +2117,8 @@ function renderStageList() {
 
 function toggleStage() {
   if (isPlaying || gachaRunning) return;
-  zukanPanel.classList.add("hidden");
-  rankingPanel.classList.add("hidden");
+  closeZukanPanel();
+  closeRankingPanel();
   if (missionOverlay) missionOverlay.classList.add("hidden");
   if (shopOverlay) shopOverlay.classList.add("hidden");
   if (!stageOverlay) return;
@@ -3461,6 +3519,7 @@ function initGachaUI() {
   initThemeShopUI();
   initStageUI();
   initTitleUI();
+  initPanelDismiss();
   if (gachaCloseBtn) gachaCloseBtn.addEventListener("click", closeGachaModal);
   if (loginBonusBtn) loginBonusBtn.addEventListener("click", claimLoginBonus);
   if (zukanList) {

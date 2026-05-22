@@ -3666,6 +3666,22 @@ body {
   background: linear-gradient(180deg, #f5efe8, #dfd5cb);
 }
 
+/* --- 図鑑・ランキング用バックドロップ（外側タップで閉じる） --- */
+
+.ui-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 87;
+  background: rgba(93, 64, 55, 0.45);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ui-backdrop.hidden {
+  display: none;
+}
+
 /* --- ランキング（今日のランキング風） --- */
 
 .ranking-panel {
